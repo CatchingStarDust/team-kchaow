@@ -81,19 +81,31 @@ function createSiteBox(query) {
   const reviewCount = scrapeReviewCount();
 
   const metricsDiv = document.createElement("div");
-  metricsDiv.style.display = "grid";
-  metricsDiv.style.gridTemplateColumns = "repeat(2, minmax(0, 1fr))";
+  metricsDiv.style.display = "flex";
+  metricsDiv.style.flexWrap = "wrap";
   metricsDiv.style.gap = "8px";
   metricsDiv.style.marginBottom = "10px";
+  metricsDiv.style.fontSize = "11px";
   metricsDiv.innerHTML = `
-    <div><strong>Price estimate:</strong><br>${actualPrice ? `$${actualPrice}` : 'N/A'}</div>
-    <div><strong>Rating:</strong><br>${rating ? `${rating}/5` : 'N/A'}</div>
-    <div><strong>Review count:</strong><br>${reviewCount ? reviewCount : 'N/A'}</div>
-    <div><strong>Domain:</strong><br>${window.location.hostname}</div>
+    <div><strong>Rating:</strong> ${rating ? `${rating}/5` : 'N/A'}</div>
+    <div><strong>Reviews:</strong> ${reviewCount ? reviewCount : 'N/A'}</div>
+    <div><strong>Domain:</strong> ${window.location.hostname}</div>
   `;
   box.appendChild(metricsDiv);
 
   addScamMeter(box, actualPrice, query, rating, reviewCount);
+
+  const quickLinks = document.createElement("div");
+  quickLinks.style.display = "flex";
+  quickLinks.style.flexWrap = "wrap";
+  quickLinks.style.gap = "6px";
+  quickLinks.style.marginTop = "8px";
+  quickLinks.style.fontSize = "11px";
+  quickLinks.innerHTML = `
+    <a href="https://www.google.com/search?q=${encodeURIComponent(query + " business license")}" target="_blank" style="color: #1a73e8; text-decoration: none;">License</a>
+    <a href="https://www.google.com/search?q=${encodeURIComponent(query + " rating")}" target="_blank" style="color: #1a73e8; text-decoration: none;">Rating</a>
+  `;
+  box.appendChild(quickLinks);
 
   const reviewsDiv = document.createElement("div");
   reviewsDiv.style.marginTop = "12px";
@@ -192,8 +204,9 @@ async function addScamMeter(box, actualPrice, query, rating, reviewCount) {
 function scrapePrice() {
     const priceElement = document.querySelector('[data-attrid="price"]') || 
                          document.querySelector('.fG8Fp.uo4vr span');
-    if (!priceElement) return 150;
-    return parseFloat(priceElement.innerText.replace(/[^0-9.]/g, '')) || 150;
+    if (!priceElement) return null;
+    const value = parseFloat(priceElement.innerText.replace(/[^0-9.]/g, ''));
+    return Number.isFinite(value) ? value : null;
 }
 
 function extractFirstFloat(text) {
@@ -257,24 +270,37 @@ function createReviewBox(query) {
   const reviewCount = scrapeReviewCount();
 
   const metricsDiv = document.createElement("div");
-  metricsDiv.style.display = "grid";
-  metricsDiv.style.gridTemplateColumns = "repeat(2, minmax(0, 1fr))";
+  metricsDiv.style.display = "flex";
+  metricsDiv.style.flexWrap = "wrap";
   metricsDiv.style.gap = "8px";
   metricsDiv.style.marginBottom = "10px";
+  metricsDiv.style.fontSize = "11px";
   metricsDiv.innerHTML = `
-    <div><strong>Price estimate:</strong><br>${actualPrice ? `$${actualPrice}` : 'N/A'}</div>
-    <div><strong>Rating:</strong><br>${rating ? `${rating}/5` : 'N/A'}</div>
-    <div><strong>Review count:</strong><br>${reviewCount ? reviewCount : 'N/A'}</div>
-    <div><strong>Domain:</strong><br>${window.location.hostname}</div>
+    <div><strong>Rating:</strong> ${rating ? `${rating}/5` : 'N/A'}</div>
+    <div><strong>Reviews:</strong> ${reviewCount ? reviewCount : 'N/A'}</div>
+    <div><strong>Domain:</strong> ${window.location.hostname}</div>
   `;
   box.appendChild(metricsDiv);
 
   addScamMeter(box, actualPrice, query, rating, reviewCount);
+
+  const quickLinks = document.createElement("div");
+  quickLinks.style.display = "flex";
+  quickLinks.style.flexWrap = "wrap";
+  quickLinks.style.gap = "6px";
+  quickLinks.style.marginTop = "10px";
+  quickLinks.style.fontSize = "11px";
+  quickLinks.innerHTML = `
+    <a href="https://www.google.com/search?q=${encodeURIComponent(query + " business license")}" target="_blank" style="color: #1a73e8; text-decoration: none;">License</a>
+    <a href="https://www.google.com/search?q=${encodeURIComponent(query + " rating")}" target="_blank" style="color: #1a73e8; text-decoration: none;">Rating</a>
+  `;
+  box.appendChild(quickLinks);
+
   const links = [
-    {url: "https://www.bbb.org/search?find_country=USA&find_text=" + encodeURIComponent(query), label: "BBB Reviews"},
-    {url: "https://www.yelp.com/search?find_desc=" + encodeURIComponent(query), label: "Yelp Reviews"},
+    {url: "https://www.bbb.org/search?find_country=USA&find_text=" + encodeURIComponent(query), label: "BBB"},
+    {url: "https://www.yelp.com/search?find_desc=" + encodeURIComponent(query), label: "Yelp"},
     {url: "https://www.trustpilot.com/search?query=" + encodeURIComponent(query), label: "Trustpilot"},
-    {url: "https://www.google.com/search?q=" + encodeURIComponent(query + " reviews"), label: "Google Reviews"},
+    {url: "https://www.google.com/search?q=" + encodeURIComponent(query + " reviews"), label: "Google"},
     {url: "https://www.consumeraffairs.com/search/" + encodeURIComponent(query), label: "Consumer Affairs"},
   ];
   const linkContainer = document.createElement("div");
