@@ -263,7 +263,9 @@ function showWarningSummary() {
         ".review-extension-box, .warning-summary-box"
     ).forEach(el => el.remove());
 
-    const pageText = clone.innerText.toLowerCase();
+    
+    // textContent works on elements that aren't on the page
+    const pageText = clone.textContent.toLowerCase();
     const foundKeywords = keywords.filter(keyword => {
         const regex = new RegExp(`\\b${keyword}\\b`, "i");
         return regex.test(pageText);
