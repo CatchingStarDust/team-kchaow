@@ -37,3 +37,10 @@
 .review-link:hover {
   background: #e8f0fe;
 }
+.highlight-warning {
+  background-color: yellow;
+  color: black;
+  font-weight: bold;
+  padding: 1px 3px;
+  border-radius: 3px;
+}
