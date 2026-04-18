@@ -234,7 +234,9 @@ function showWarningSummary() {
     "lawsuit",
     "refund",
     "warning",
-    "ripoff"
+    "ripoff",
+    "MLM",
+    "pyramid scheme",
   ];
 
   const searchArea = document.querySelector("#search");
