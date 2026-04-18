@@ -37,6 +37,12 @@
         color: #ffd180;
     }
 
+    .warning-summary-subtitle {
+        font-size: 13px;
+        color: #F1F5D0;
+        margin-bottom: 8px;
+    }
+
     .warning-summary-item {
         color: #ffd180;
         border-left: 3px solid #ffad47;

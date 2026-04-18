@@ -17,7 +17,7 @@ function createReviewBox(query) {
 
   const title = document.createElement("div");
   title.className = "review-title";
-  title.textContent = "🚨 Scam Check";
+    title.textContent = "🔍 Scam Check";
   box.appendChild(title);
 
   const subtitle = document.createElement("div");
@@ -94,7 +94,9 @@ function highlightKeywords() {
     "lawsuit",
     "refund",
     "warning",
-    "ripoff"
+    "ripoff",
+    "MLM",
+    "pyramid scheme",
   ];
 
   const searchArea = document.querySelector("#search");
