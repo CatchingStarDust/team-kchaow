@@ -1,3 +1,5 @@
+let firstWarningTarget = null;
+
 function getSearchQuery() {
   const params = new URLSearchParams(window.location.search);
   return params.get("q") || "";
@@ -75,6 +77,19 @@ function insertReviewBox() {
   main.prepend(box);
 }
 
+function isInsideExtensionUI(node) {
+  const parentElement = node.parentElement;
+  if (!parentElement) return false;
+
+  return !!parentElement.closest(
+    ".review-extension-box, .warning-summary-box"
+  );
+}
+
+function findClosestResultBlock(element) {
+  return element.closest(".g, [data-snc], [data-hveid]") || element.closest("div");
+}
+
 function highlightKeywords() {
   const keywords = [
     "scam",
@@ -91,32 +106,40 @@ function highlightKeywords() {
   const searchArea = document.querySelector("#search");
   if (!searchArea) return;
 
+  firstWarningTarget = null;
+
   const walker = document.createTreeWalker(
     searchArea,
     NodeFilter.SHOW_TEXT,
-    null,
-    false
+    {
+      acceptNode(node) {
+        if (!node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+        if (isInsideExtensionUI(node)) return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
+      }
+    }
   );
 
   const textNodes = [];
   let node;
 
   while ((node = walker.nextNode())) {
-    if (node.nodeValue.trim()) {
-      textNodes.push(node);
-    }
+    textNodes.push(node);
   }
 
   textNodes.forEach(textNode => {
     const parent = textNode.parentNode;
+    if (!parent) return;
 
-    if (!parent || parent.classList?.contains("highlight-warning")) return;
-
-    let text = textNode.nodeValue;
+    const text = textNode.nodeValue;
     let replaced = text;
+    let foundInThisNode = false;
 
     keywords.forEach(keyword => {
       const regex = new RegExp(`\\b(${keyword})\\b`, "gi");
+      if (regex.test(replaced)) {
+        foundInThisNode = true;
+      }
       replaced = replaced.replace(
         regex,
         '<span class="highlight-warning">$1</span>'
@@ -127,69 +150,49 @@ function highlightKeywords() {
       const span = document.createElement("span");
       span.innerHTML = replaced;
       parent.replaceChild(span, textNode);
+
+      if (!firstWarningTarget && foundInThisNode) {
+        const firstHighlight = span.querySelector(".highlight-warning");
+        const resultBlock = firstHighlight
+          ? findClosestResultBlock(firstHighlight)
+          : null;
+
+        firstWarningTarget = resultBlock || firstHighlight || span;
+      }
     }
   });
 }
 
 function jumpToFirstWarning() {
-  const firstWarning = document.querySelector(".highlight-warning");
+  if (!firstWarningTarget) {
+    const fallbackHighlight = document.querySelector(
+      "#search .highlight-warning"
+    );
 
-  if (firstWarning) {
-    firstWarning.scrollIntoView({
-      behavior: "smooth",
-      block: "center"
-    });
+    if (fallbackHighlight && !fallbackHighlight.closest(".warning-summary-box, .review-extension-box")) {
+      firstWarningTarget = findClosestResultBlock(fallbackHighlight) || fallbackHighlight;
+    }
+  }
 
-    firstWarning.style.outline = "3px solid red";
-    firstWarning.style.outlineOffset = "2px";
-
-    setTimeout(() => {
-      firstWarning.style.outline = "";
-      firstWarning.style.outlineOffset = "";
-    }, 2000);
-
+  if (!firstWarningTarget) {
+    alert("No warning result found on this page.");
     return;
   }
 
-  const resultBlocks = Array.from(document.querySelectorAll("#search div"));
-  const keywords = [
-    "scam",
-    "fraud",
-    "fake",
-    "complaint",
-    "complaints",
-    "lawsuit",
-    "refund",
-    "warning",
-    "ripoff"
-  ];
-
-  const firstMatchingBlock = resultBlocks.find(block => {
-    const text = block.innerText ? block.innerText.toLowerCase() : "";
-    return keywords.some(keyword => {
-      const regex = new RegExp(`\\b${keyword}\\b`, "i");
-      return regex.test(text);
-    });
+  firstWarningTarget.scrollIntoView({
+    behavior: "smooth",
+    block: "center"
   });
 
-  if (firstMatchingBlock) {
-    firstMatchingBlock.scrollIntoView({
-      behavior: "smooth",
-      block: "center"
-    });
+  firstWarningTarget.style.outline = "4px solid red";
+  firstWarningTarget.style.outlineOffset = "3px";
+  firstWarningTarget.style.backgroundColor = "#fff3cd";
 
-    firstMatchingBlock.style.outline = "3px solid red";
-    firstMatchingBlock.style.outlineOffset = "2px";
-
-    setTimeout(() => {
-      firstMatchingBlock.style.outline = "";
-      firstMatchingBlock.style.outlineOffset = "";
-    }, 2000);
-
-    return;
-  }
-
-  alert("No warning result found on this page.");
+  setTimeout(() => {
+    firstWarningTarget.style.outline = "";
+    firstWarningTarget.style.outlineOffset = "";
+    firstWarningTarget.style.backgroundColor = "";
+  }, 2000);
 }
 
 function createWarningBox(foundKeywords) {
