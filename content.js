@@ -301,7 +301,7 @@ function createReviewBox(query) {
         { url: "https://www.yelp.com/search?find_desc=" + encodeURIComponent(query), label: "Yelp" },
         { url: "https://www.google.com/search?q=" + encodeURIComponent(query + " reviews"), label: "Google" },
         { url: "https://www.consumeraffairs.com/search/" + encodeURIComponent(query), label: "Consumer Affairs" },
-        { url: "https://www.cslb.ca.gov/onlineservices/checklicenseII/checklicense.aspx" + encodeURIComponent(query), label: "CSLB License Check" },
+        { url: "https://www.cslb.ca.gov/onlineservices/checklicenseII/checklicense.aspx?LicenseNumber=" + encodeURIComponent(query), label: "CSLB License Check" },
 
     ];
   const linkContainer = document.createElement("div");
