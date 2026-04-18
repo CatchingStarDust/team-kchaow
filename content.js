@@ -9,6 +9,39 @@ function looksLikeBusiness(query) {
          !query.toLowerCase().includes("what");
 }
 
+function getWarningKeywords() {
+  return [
+    "scam",
+    "fraud",
+    "fake",
+    "complaint",
+    "complaints",
+    "lawsuit",
+    "refund",
+    "warning",
+    "ripoff"
+  ];
+}
+
+function getResultCards() {
+  const selectors = [
+    "#search .g",
+    "#search .MjjYud",
+    "#search [data-snc]"
+  ];
+
+  const cards = [];
+  selectors.forEach(selector => {
+    document.querySelectorAll(selector).forEach(el => {
+      if (!cards.includes(el)) {
+        cards.push(el);
+      }
+    });
+  });
+
+  return cards;
+}
+
 function createReviewBox(query) {
   const box = document.createElement("div");
   box.className = "review-extension-box";
@@ -76,84 +109,70 @@ function insertReviewBox() {
 }
 
 function highlightKeywords() {
-  const keywords = [
-    "scam",
-    "fraud",
-    "fake",
-    "complaint",
-    "complaints",
-    "lawsuit",
-    "refund",
-    "warning",
-    "ripoff"
-  ];
+  const keywords = getWarningKeywords();
+  const cards = getResultCards();
 
-  const searchArea = document.querySelector("#search");
-  if (!searchArea) return;
+  cards.forEach(card => {
+    const walker = document.createTreeWalker(
+      card,
+      NodeFilter.SHOW_TEXT,
+      {
+        acceptNode(node) {
+          if (!node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
 
-  const walker = document.createTreeWalker(
-    searchArea,
-    NodeFilter.SHOW_TEXT,
-    null,
-    false
-  );
+          const parent = node.parentElement;
+          if (!parent) return NodeFilter.FILTER_REJECT;
 
-  const textNodes = [];
-  let node;
+          if (parent.closest(".review-extension-box, .warning-summary-box")) {
+            return NodeFilter.FILTER_REJECT;
+          }
 
-  while ((node = walker.nextNode())) {
-    if (node.nodeValue.trim()) {
+          if (parent.closest("script, style, noscript, textarea, input")) {
+            return NodeFilter.FILTER_REJECT;
+          }
+
+          return NodeFilter.FILTER_ACCEPT;
+        }
+      }
+    );
+
+    const textNodes = [];
+    let node;
+
+    while ((node = walker.nextNode())) {
       textNodes.push(node);
     }
-  }
 
-  textNodes.forEach(textNode => {
-    const parent = textNode.parentNode;
-    if (!parent) return;
+    textNodes.forEach(textNode => {
+      const parent = textNode.parentNode;
+      if (!parent) return;
 
-    if (
-      parent.closest &&
-      parent.closest(".review-extension-box, .warning-summary-box")
-    ) {
-      return;
-    }
+      const text = textNode.nodeValue;
+      let replaced = text;
 
-    const text = textNode.nodeValue;
-    let replaced = text;
+      keywords.forEach(keyword => {
+        const regex = new RegExp(`\\b(${keyword})\\b`, "gi");
+        replaced = replaced.replace(
+          regex,
+          '<span class="highlight-warning">$1</span>'
+        );
+      });
 
-    keywords.forEach(keyword => {
-      const regex = new RegExp(`\\b(${keyword})\\b`, "gi");
-      replaced = replaced.replace(
-        regex,
-        '<span class="highlight-warning">$1</span>'
-      );
+      if (replaced !== text) {
+        const span = document.createElement("span");
+        span.innerHTML = replaced;
+        parent.replaceChild(span, textNode);
+      }
     });
-
-    if (replaced !== text) {
-      const span = document.createElement("span");
-      span.innerHTML = replaced;
-      parent.replaceChild(span, textNode);
-    }
   });
 }
 
 function jumpToFirstWarning() {
-  const keywords = [
-    "scam",
-    "fraud",
-    "fake",
-    "complaint",
-    "complaints",
-    "lawsuit",
-    "refund",
-    "warning",
-    "ripoff"
-  ];
+  const keywords = getWarningKeywords();
+  const cards = getResultCards();
 
-  const results = Array.from(document.querySelectorAll("#search .g"));
-
-  const match = results.find(result => {
-    const text = result.innerText.toLowerCase();
+  const match = cards.find(card => {
+    const text = (card.innerText || "").toLowerCase();
     return keywords.some(keyword => {
       const regex = new RegExp(`\\b${keyword}\\b`, "i");
       return regex.test(text);
@@ -161,7 +180,7 @@ function jumpToFirstWarning() {
   });
 
   if (!match) {
-    alert("No warning result found on this page.");
+    alert("No warning result found in the search results.");
     return;
   }
 
@@ -194,7 +213,7 @@ function createWarningBox(foundKeywords) {
 
   const subtitle = document.createElement("div");
   subtitle.className = "warning-summary-subtitle";
-  subtitle.textContent = "These words appeared on this page:";
+  subtitle.textContent = "These words appeared in the search results:";
   box.appendChild(subtitle);
 
   const list = document.createElement("ul");
@@ -218,29 +237,24 @@ function createWarningBox(foundKeywords) {
 }
 
 function showWarningSummary() {
-  const keywords = [
-    "scam",
-    "fraud",
-    "fake",
-    "complaint",
-    "complaints",
-    "lawsuit",
-    "refund",
-    "warning",
-    "ripoff"
-  ];
+  const keywords = getWarningKeywords();
+  const cards = getResultCards();
 
-  const searchArea = document.querySelector("#search");
-  if (!searchArea) return;
+  const resultsText = cards
+    .map(card => card.innerText || "")
+    .join(" ")
+    .toLowerCase();
 
-  const pageText = searchArea.innerText.toLowerCase();
   const foundKeywords = keywords.filter(keyword => {
     const regex = new RegExp(`\\b${keyword}\\b`, "i");
-    return regex.test(pageText);
+    return regex.test(resultsText);
   });
 
   if (foundKeywords.length === 0) return;
   if (document.querySelector(".warning-summary-box")) return;
+
+  const searchArea = document.querySelector("#search");
+  if (!searchArea) return;
 
   const box = createWarningBox(foundKeywords);
   if (!box) return;
