@@ -52,3 +52,18 @@
   margin-bottom: 16px;
   font-family: Arial, sans-serif;
 }
+.jump-warning-button {
+  margin-top: 12px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 8px;
+  background: #f4b400;
+  color: black;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.jump-warning-button:hover {
+  background: #e2a200;
+}

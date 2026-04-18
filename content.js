@@ -37,12 +37,12 @@ function createReviewBox(query) {
       url: "https://www.cslb.ca.gov/onlineservices/checklicenseII/checklicense.aspx"
     },
     {
-      label: "Better Business Bureau",
-      url: "https://www.bbb.org/"
+      label: "BBB",
+      url: `https://www.bbb.org/search?find_text=${encodeURIComponent(query)}`
     },
     {
       label: "Consumer Affairs",
-      url: "https://www.consumeraffairs.com/"
+      url: `https://www.consumeraffairs.com/search/?q=${encodeURIComponent(query)}`
     }
   ];
 
@@ -108,6 +108,10 @@ function highlightKeywords() {
   }
 
   textNodes.forEach(textNode => {
+    const parent = textNode.parentNode;
+
+    if (!parent || parent.classList?.contains("highlight-warning")) return;
+
     let text = textNode.nodeValue;
     let replaced = text;
 
@@ -122,10 +126,29 @@ function highlightKeywords() {
     if (replaced !== text) {
       const span = document.createElement("span");
       span.innerHTML = replaced;
-      textNode.parentNode.replaceChild(span, textNode);
+      parent.replaceChild(span, textNode);
     }
   });
 }
+
+function jumpToFirstWarning() {
+  const firstWarning = document.querySelector(".highlight-warning");
+  if (!firstWarning) return;
+
+  firstWarning.scrollIntoView({
+    behavior: "smooth",
+    block: "center"
+  });
+
+  firstWarning.style.outline = "2px solid red";
+  firstWarning.style.outlineOffset = "2px";
+
+  setTimeout(() => {
+    firstWarning.style.outline = "";
+    firstWarning.style.outlineOffset = "";
+  }, 2000);
+}
+
 function createWarningBox(foundKeywords) {
   if (foundKeywords.length === 0) return null;
 
@@ -152,6 +175,13 @@ function createWarningBox(foundKeywords) {
   });
 
   box.appendChild(list);
+
+  const jumpButton = document.createElement("button");
+  jumpButton.className = "jump-warning-button";
+  jumpButton.textContent = "Jump to first warning";
+  jumpButton.addEventListener("click", jumpToFirstWarning);
+  box.appendChild(jumpButton);
+
   return box;
 }
 
@@ -172,7 +202,10 @@ function showWarningSummary() {
   if (!searchArea) return;
 
   const pageText = searchArea.innerText.toLowerCase();
-  const foundKeywords = keywords.filter(keyword => pageText.includes(keyword));
+  const foundKeywords = keywords.filter(keyword => {
+  const regex = new RegExp(`\\b${keyword}\\b`, "i");
+  return regex.test(pageText);
+});
 
   if (foundKeywords.length === 0) return;
   if (document.querySelector(".warning-summary-box")) return;
@@ -182,6 +215,7 @@ function showWarningSummary() {
 
   searchArea.prepend(box);
 }
+
 insertReviewBox();
 highlightKeywords();
 showWarningSummary();
