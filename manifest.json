@@ -12,7 +12,7 @@
     {
       "matches": [ "*://www.google.com/*" ],
       "js": [ "content.js" ],
-      "css": [ "content.css" ]
+      "css": [ "content.css", "warningSummaryStyle.css", "scamCheckBox.css" ]
     }
   ]
 }
