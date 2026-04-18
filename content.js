@@ -254,7 +254,6 @@ function createWarningBox(foundKeywords) {
 
 function showWarningSummary() {
     const keywords = getWarningKeywords();
-
     const searchArea = document.querySelector("#search");
     if (!searchArea) return;
 
@@ -263,8 +262,6 @@ function showWarningSummary() {
         ".review-extension-box, .warning-summary-box"
     ).forEach(el => el.remove());
 
-    
-    // textContent works on elements that aren't on the page
     const pageText = clone.textContent.toLowerCase();
     const foundKeywords = keywords.filter(keyword => {
         const regex = new RegExp(`\\b${keyword}\\b`, "i");
@@ -278,6 +275,30 @@ function showWarningSummary() {
     if (!box) return;
 
     searchArea.prepend(box);
+}
+
+function init() {
+    insertReviewBox();
+    highlightKeywords();
+    showWarningSummary();
+}
+
+// Watch for Google dynamically loading results
+const observer = new MutationObserver(() => {
+    if (document.querySelector("#search")) {
+        observer.disconnect();
+        setTimeout(init, 500);
+    }
+});
+
+observer.observe(document.body, {
+    childList: true,
+    subtree: true
+});
+
+// Also run immediately in case results are already loaded
+if (document.querySelector("#search")) {
+    setTimeout(init, 500);
 }
 
 insertReviewBox();
