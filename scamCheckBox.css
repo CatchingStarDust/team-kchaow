@@ -1,9 +1,5 @@
-﻿body {
-    /* scamCheckBox.css */
-    .review-extension-box
-
-{
-    background: #fff; /* Light background */
+﻿.review-extension-box {
+    background: #fff;
     border: 1px solid #dadce0;
     border-radius: 12px;
     padding: 16px;
@@ -54,7 +50,7 @@
 
 @media (prefers-color-scheme: dark) {
     .review-extension-box {
-        background: #23272f; /* Dark background */
+        background: #23272f;
         border: 1px solid #373b41;
         color: #e2e5e9;
     }
@@ -77,5 +73,4 @@
             background: #283042;
             color: #64b5f6;
         }
-}
 }

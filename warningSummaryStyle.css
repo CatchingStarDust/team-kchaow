@@ -1,15 +1,24 @@
-﻿body {
-    /* warning-summary.css */
-    .warning-summary-box
-
-{
+﻿.warning-summary-box {
     background: #fff3cd;
     border: 2px solid #ff6b6b;
     color: #c92a2a;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+    font-family: Arial, sans-serif;
 }
 
 .warning-summary-title {
     color: #c92a2a;
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 6px;
+}
+
+.warning-summary-subtitle {
+    font-size: 13px;
+    color: #5f6368;
+    margin-bottom: 8px;
 }
 
 .warning-summary-item {
@@ -56,5 +65,4 @@
         background: #ffad47;
         color: #222;
     }
-}
 }
