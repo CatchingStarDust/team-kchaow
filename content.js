@@ -29,27 +29,81 @@ function highlightKeywords() {
             textNodes.push(node);
         }
     }
+  ];
 
-    textNodes.forEach(textNode => {
-        let text = textNode.nodeValue;
-        let hasKeyword = false;
+  const linkContainer = document.createElement("div");
+  linkContainer.className = "review-links";
 
-        keywords.forEach(keyword => {
-            if (new RegExp(`\\b${keyword}\\b`, "i").test(text)) {
-                hasKeyword = true;
-            }
-        });
+  links.forEach(linkInfo => {
+    const actualPrice = scrapePrice(); 
+    addScamMeter(box, actualPrice);
+    const a = document.createElement("a");
+    a.href = linkInfo.url;
+    a.textContent = linkInfo.label;
+    a.target = "_blank";
+    a.className = "review-link";
+    linkContainer.appendChild(a);
+  });
 
-        if (hasKeyword) {
-            const span = document.createElement("span");
+  box.appendChild(linkContainer);
+  return box;
+}
 
-            keywords.forEach(keyword => {
-                const regex = new RegExp(`\\b(${keyword})\\b`, "gi");
-                text = text.replace(regex, `<span class="highlight-warning">$1</span>`);
-            });
+function insertReviewBox() {
+  if (document.querySelector(".review-extension-box")) return;
 
-            span.innerHTML = text;
-            textNode.parentNode.replaceChild(span, textNode);
-        }
+  const query = getSearchQuery().trim();
+  if (!query || !looksLikeBusiness(query)) return;
+
+  const main = document.querySelector("#search");
+  if (!main) return;
+
+  const box = createReviewBox(query);
+  main.prepend(box);
+}
+
+insertReviewBox();
+// Paste this at the very bottom of content.js
+async function addScamMeter(box) {
+    const response = await chrome.runtime.sendMessage({
+        action: "calculateScamScore",
+        price: 150 
     });
+    // 1. Get the data from the page
+    const actualPrice = scrapePrice();
+    // 2. Send the data to the background "brain" to get a score
+    const response = await chrome.runtime.sendMessage({
+        action: "calculateScamScore",
+        price: actualPrice 
+    });
+    const meterContainer = document.createElement("div");
+    meterContainer.style.marginTop = "15px";
+    meterContainer.style.borderTop = "1px solid #eee";
+    meterContainer.style.paddingTop = "10px";
+
+    let meterColor = "#4CAF50"; // Green
+    if (response.score > 35) meterColor = "#FFC107"; // Yellow
+    if (response.score > 65) meterColor = "#F44336"; // Red
+
+    meterContainer.innerHTML = `
+        <div style="font-weight: bold; margin-bottom: 5px; font-size: 12px;">Scam Risk Meter</div>
+        <div style="background: #eee; height: 8px; border-radius: 4px; overflow: hidden;">
+            <div style="background: ${meterColor}; width: ${response.score}%; height: 100%;"></div>
+        </div>
+        <div style="font-size: 10px; margin-top: 5px; color: #666;">
+            Flags: ${response.reasons.join(", ")}
+        </div>
+    `;
+
+    box.appendChild(meterContainer);
+}
+function scrapePrice() {
+    // This looks for common Google price locations
+    const priceElement = document.querySelector('[data-attrid="price"]') || 
+                         document.querySelector('.fG8Fp.uo4vr span');
+    
+    if (!priceElement) return 150; // Fallback price for testing
+
+    // Use Regex to turn "$1,200.00" into "1200.00"
+    return parseFloat(priceElement.innerText.replace(/[^0-9.]/g, '')) || 150;
 }
