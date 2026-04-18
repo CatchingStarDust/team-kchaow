@@ -1,5 +1,3 @@
-let firstWarningTarget = null;
-
 function getSearchQuery() {
   const params = new URLSearchParams(window.location.search);
   return params.get("q") || "";
@@ -77,13 +75,6 @@ function insertReviewBox() {
   main.prepend(box);
 }
 
-function isInsideExtensionUI(node) {
-  const el = node.parentElement;
-  if (!el) return false;
-
-  return !!el.closest(".review-extension-box, .warning-summary-box");
-}
-
 function highlightKeywords() {
   const keywords = [
     "scam",
@@ -100,40 +91,38 @@ function highlightKeywords() {
   const searchArea = document.querySelector("#search");
   if (!searchArea) return;
 
-  firstWarningTarget = null;
-
   const walker = document.createTreeWalker(
     searchArea,
     NodeFilter.SHOW_TEXT,
-    {
-      acceptNode(node) {
-        if (!node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
-        if (isInsideExtensionUI(node)) return NodeFilter.FILTER_REJECT;
-        return NodeFilter.FILTER_ACCEPT;
-      }
-    }
+    null,
+    false
   );
 
   const textNodes = [];
   let node;
 
   while ((node = walker.nextNode())) {
-    textNodes.push(node);
+    if (node.nodeValue.trim()) {
+      textNodes.push(node);
+    }
   }
 
   textNodes.forEach(textNode => {
     const parent = textNode.parentNode;
     if (!parent) return;
 
+    if (
+      parent.closest &&
+      parent.closest(".review-extension-box, .warning-summary-box")
+    ) {
+      return;
+    }
+
     const text = textNode.nodeValue;
     let replaced = text;
-    let foundInThisNode = false;
 
     keywords.forEach(keyword => {
       const regex = new RegExp(`\\b(${keyword})\\b`, "gi");
-      if (regex.test(text)) {
-        foundInThisNode = true;
-      }
       replaced = replaced.replace(
         regex,
         '<span class="highlight-warning">$1</span>'
@@ -144,47 +133,51 @@ function highlightKeywords() {
       const span = document.createElement("span");
       span.innerHTML = replaced;
       parent.replaceChild(span, textNode);
-
-      if (!firstWarningTarget && foundInThisNode) {
-        const firstHighlight = span.querySelector(".highlight-warning");
-        if (firstHighlight) {
-          firstWarningTarget = firstHighlight;
-        }
-      }
     }
   });
 }
 
 function jumpToFirstWarning() {
-  if (!firstWarningTarget) {
-    const fallbackHighlights = Array.from(document.querySelectorAll(".highlight-warning"));
-    const realHighlight = fallbackHighlights.find(el =>
-      !el.closest(".review-extension-box, .warning-summary-box")
-    );
+  const keywords = [
+    "scam",
+    "fraud",
+    "fake",
+    "complaint",
+    "complaints",
+    "lawsuit",
+    "refund",
+    "warning",
+    "ripoff"
+  ];
 
-    if (realHighlight) {
-      firstWarningTarget = realHighlight;
-    }
-  }
+  const results = Array.from(document.querySelectorAll("#search .g"));
 
-  if (!firstWarningTarget) {
+  const match = results.find(result => {
+    const text = result.innerText.toLowerCase();
+    return keywords.some(keyword => {
+      const regex = new RegExp(`\\b${keyword}\\b`, "i");
+      return regex.test(text);
+    });
+  });
+
+  if (!match) {
     alert("No warning result found on this page.");
     return;
   }
 
-  firstWarningTarget.scrollIntoView({
+  match.scrollIntoView({
     behavior: "smooth",
     block: "center"
   });
 
-  firstWarningTarget.style.outline = "4px solid red";
-  firstWarningTarget.style.outlineOffset = "3px";
-  firstWarningTarget.style.backgroundColor = "#ffeb3b";
+  match.style.outline = "4px solid red";
+  match.style.outlineOffset = "4px";
+  match.style.backgroundColor = "#fff3cd";
 
   setTimeout(() => {
-    firstWarningTarget.style.outline = "";
-    firstWarningTarget.style.outlineOffset = "";
-    firstWarningTarget.style.backgroundColor = "";
+    match.style.outline = "";
+    match.style.outlineOffset = "";
+    match.style.backgroundColor = "";
   }, 2000);
 }
 
@@ -234,9 +227,7 @@ function showWarningSummary() {
     "lawsuit",
     "refund",
     "warning",
-    "ripoff",
-    "MLM",
-    "pyramid scheme",
+    "ripoff"
   ];
 
   const searchArea = document.querySelector("#search");
