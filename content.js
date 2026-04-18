@@ -50,7 +50,7 @@ function createReviewBox(query) {
 
   const title = document.createElement("div");
   title.className = "review-title";
-  title.textContent = "🚨 Scam Check";
+    title.textContent = "🔍 Scam Check";
   box.appendChild(title);
 
   const subtitle = document.createElement("div");
