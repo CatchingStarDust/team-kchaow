@@ -1,3 +1,5 @@
+let firstWarningTarget = null;
+
 function getSearchQuery() {
   const params = new URLSearchParams(window.location.search);
   return params.get("q") || "";
@@ -35,6 +37,14 @@ function createReviewBox(query) {
     {
       label: "CSLB License Check",
       url: "https://www.cslb.ca.gov/onlineservices/checklicenseII/checklicense.aspx"
+    },
+    {
+      label: "BBB",
+      url: `https://www.bbb.org/search?find_text=${encodeURIComponent(query)}`
+    },
+    {
+      label: "Consumer Affairs",
+      url: `https://www.consumeraffairs.com/search/?q=${encodeURIComponent(query)}`
     }
   ];
 
@@ -67,6 +77,19 @@ function insertReviewBox() {
   main.prepend(box);
 }
 
+function isInsideExtensionUI(node) {
+  const parentElement = node.parentElement;
+  if (!parentElement) return false;
+
+  return !!parentElement.closest(
+    ".review-extension-box, .warning-summary-box"
+  );
+}
+
+function findClosestResultBlock(element) {
+  return element.closest(".g, [data-snc], [data-hveid]") || element.closest("div");
+}
+
 function highlightKeywords() {
   const keywords = [
     "scam",
@@ -83,28 +106,40 @@ function highlightKeywords() {
   const searchArea = document.querySelector("#search");
   if (!searchArea) return;
 
+  firstWarningTarget = null;
+
   const walker = document.createTreeWalker(
     searchArea,
     NodeFilter.SHOW_TEXT,
-    null,
-    false
+    {
+      acceptNode(node) {
+        if (!node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+        if (isInsideExtensionUI(node)) return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
+      }
+    }
   );
 
   const textNodes = [];
   let node;
 
   while ((node = walker.nextNode())) {
-    if (node.nodeValue.trim()) {
-      textNodes.push(node);
-    }
+    textNodes.push(node);
   }
 
   textNodes.forEach(textNode => {
-    let text = textNode.nodeValue;
+    const parent = textNode.parentNode;
+    if (!parent) return;
+
+    const text = textNode.nodeValue;
     let replaced = text;
+    let foundInThisNode = false;
 
     keywords.forEach(keyword => {
       const regex = new RegExp(`\\b(${keyword})\\b`, "gi");
+      if (regex.test(replaced)) {
+        foundInThisNode = true;
+      }
       replaced = replaced.replace(
         regex,
         '<span class="highlight-warning">$1</span>'
@@ -114,10 +149,119 @@ function highlightKeywords() {
     if (replaced !== text) {
       const span = document.createElement("span");
       span.innerHTML = replaced;
-      textNode.parentNode.replaceChild(span, textNode);
+      parent.replaceChild(span, textNode);
+
+      if (!firstWarningTarget && foundInThisNode) {
+        const firstHighlight = span.querySelector(".highlight-warning");
+        const resultBlock = firstHighlight
+          ? findClosestResultBlock(firstHighlight)
+          : null;
+
+        firstWarningTarget = resultBlock || firstHighlight || span;
+      }
     }
   });
 }
 
+function jumpToFirstWarning() {
+  if (!firstWarningTarget) {
+    const fallbackHighlight = document.querySelector(
+      "#search .highlight-warning"
+    );
+
+    if (fallbackHighlight && !fallbackHighlight.closest(".warning-summary-box, .review-extension-box")) {
+      firstWarningTarget = findClosestResultBlock(fallbackHighlight) || fallbackHighlight;
+    }
+  }
+
+  if (!firstWarningTarget) {
+    alert("No warning result found on this page.");
+    return;
+  }
+
+  firstWarningTarget.scrollIntoView({
+    behavior: "smooth",
+    block: "center"
+  });
+
+  firstWarningTarget.style.outline = "4px solid red";
+  firstWarningTarget.style.outlineOffset = "3px";
+  firstWarningTarget.style.backgroundColor = "#fff3cd";
+
+  setTimeout(() => {
+    firstWarningTarget.style.outline = "";
+    firstWarningTarget.style.outlineOffset = "";
+    firstWarningTarget.style.backgroundColor = "";
+  }, 2000);
+}
+
+function createWarningBox(foundKeywords) {
+  if (foundKeywords.length === 0) return null;
+
+  const box = document.createElement("div");
+  box.className = "warning-summary-box";
+
+  const title = document.createElement("div");
+  title.className = "warning-summary-title";
+  title.textContent = "🚨 Warning Signals Found";
+  box.appendChild(title);
+
+  const subtitle = document.createElement("div");
+  subtitle.className = "warning-summary-subtitle";
+  subtitle.textContent = "These words appeared on this page:";
+  box.appendChild(subtitle);
+
+  const list = document.createElement("ul");
+  list.className = "warning-summary-list";
+
+  foundKeywords.forEach(keyword => {
+    const item = document.createElement("li");
+    item.textContent = keyword;
+    list.appendChild(item);
+  });
+
+  box.appendChild(list);
+
+  const jumpButton = document.createElement("button");
+  jumpButton.className = "jump-warning-button";
+  jumpButton.textContent = "Jump to first warning";
+  jumpButton.addEventListener("click", jumpToFirstWarning);
+  box.appendChild(jumpButton);
+
+  return box;
+}
+
+function showWarningSummary() {
+  const keywords = [
+    "scam",
+    "fraud",
+    "fake",
+    "complaint",
+    "complaints",
+    "lawsuit",
+    "refund",
+    "warning",
+    "ripoff"
+  ];
+
+  const searchArea = document.querySelector("#search");
+  if (!searchArea) return;
+
+  const pageText = searchArea.innerText.toLowerCase();
+  const foundKeywords = keywords.filter(keyword => {
+    const regex = new RegExp(`\\b${keyword}\\b`, "i");
+    return regex.test(pageText);
+  });
+
+  if (foundKeywords.length === 0) return;
+  if (document.querySelector(".warning-summary-box")) return;
+
+  const box = createWarningBox(foundKeywords);
+  if (!box) return;
+
+  searchArea.prepend(box);
+}
+
 insertReviewBox();
 highlightKeywords();
+showWarningSummary();
