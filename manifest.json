@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Business Review Finder",
+  "name": "Business Scam Detector",
   "version": "1.0",
-  "description": "Shows Yelp and Facebook review links when people Google a business.",
+  "description": "Detect potential scams by showing reviews, complaints, and license checks when searching businesses."
   "content_scripts": [
     {
       "matches": ["*://www.google.com/search*"],

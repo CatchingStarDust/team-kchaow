@@ -15,7 +15,7 @@ function createReviewBox(query) {
 
   const title = document.createElement("div");
   title.className = "review-title";
-  title.textContent = "⭐ Reviews";
+  title.textContent = "🚨 Scam Check";
   box.appendChild(title);
 
   const subtitle = document.createElement("div");
@@ -33,8 +33,8 @@ function createReviewBox(query) {
       url: `https://www.google.com/search?q=${encodeURIComponent(query + " Facebook reviews")}`
     },
     {
-      label: "Google",
-      url: `https://www.google.com/search?q=${encodeURIComponent(query + " Google reviews")}`
+      label: "CSLB License Check",
+      url: "https://www.cslb.ca.gov/onlineservices/checklicenseII/checklicense.aspx"
     }
   ];
 
@@ -67,4 +67,57 @@ function insertReviewBox() {
   main.prepend(box);
 }
 
+function highlightKeywords() {
+  const keywords = [
+    "scam",
+    "fraud",
+    "fake",
+    "complaint",
+    "complaints",
+    "lawsuit",
+    "refund",
+    "warning",
+    "ripoff"
+  ];
+
+  const searchArea = document.querySelector("#search");
+  if (!searchArea) return;
+
+  const walker = document.createTreeWalker(
+    searchArea,
+    NodeFilter.SHOW_TEXT,
+    null,
+    false
+  );
+
+  const textNodes = [];
+  let node;
+
+  while ((node = walker.nextNode())) {
+    if (node.nodeValue.trim()) {
+      textNodes.push(node);
+    }
+  }
+
+  textNodes.forEach(textNode => {
+    let text = textNode.nodeValue;
+    let replaced = text;
+
+    keywords.forEach(keyword => {
+      const regex = new RegExp(`\\b(${keyword})\\b`, "gi");
+      replaced = replaced.replace(
+        regex,
+        '<span class="highlight-warning">$1</span>'
+      );
+    });
+
+    if (replaced !== text) {
+      const span = document.createElement("span");
+      span.innerHTML = replaced;
+      textNode.parentNode.replaceChild(span, textNode);
+    }
+  });
+}
+
 insertReviewBox();
+highlightKeywords();
