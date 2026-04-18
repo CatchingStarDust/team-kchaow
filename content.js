@@ -296,13 +296,13 @@ function createReviewBox(query) {
   `;
   box.appendChild(quickLinks);
 
-  const links = [
-    {url: "https://www.bbb.org/search?find_country=USA&find_text=" + encodeURIComponent(query), label: "BBB"},
-    {url: "https://www.yelp.com/search?find_desc=" + encodeURIComponent(query), label: "Yelp"},
-    {url: "https://www.trustpilot.com/search?query=" + encodeURIComponent(query), label: "Trustpilot"},
-    {url: "https://www.google.com/search?q=" + encodeURIComponent(query + " reviews"), label: "Google"},
-    {url: "https://www.consumeraffairs.com/search/" + encodeURIComponent(query), label: "Consumer Affairs"},
-  ];
+    const links = [
+        { url: "https://www.bbb.org/search?find_country=USA&find_text=" + encodeURIComponent(query), label: "BBB" },
+        { url: "https://www.yelp.com/search?find_desc=" + encodeURIComponent(query), label: "Yelp" },
+        { url: "https://www.google.com/search?q=" + encodeURIComponent(query + " reviews"), label: "Google" },
+        { url: "https://www.consumeraffairs.com/search/" + encodeURIComponent(query), label: "Consumer Affairs" },
+        { url: "https://www.cslb.ca.gov/onlineservices/checklicenseII/checklicense.aspx" },
+    ];
   const linkContainer = document.createElement("div");
   linkContainer.className = "review-links";
   links.forEach(linkInfo => {
