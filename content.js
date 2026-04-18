@@ -124,75 +124,62 @@ function findClosestResultBlock(element) {
 }
 
 function highlightKeywords() {
-  const keywords = getWarningKeywords();
-  const cards = getResultCards();
+    const keywords = getWarningKeywords();
+    const searchArea = document.querySelector("#search");
+    if (!searchArea) return;
 
-  cards.forEach(card => {
+    firstWarningTarget = null;
+    const textNodes = [];
+
     const walker = document.createTreeWalker(
-      card,
-      NodeFilter.SHOW_TEXT,
-      {
-        acceptNode(node) {
-          if (!node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+        searchArea,
+        NodeFilter.SHOW_TEXT,
+        {
+            acceptNode(node) {
+                if (!node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+                if (isInsideExtensionUI(node)) return NodeFilter.FILTER_REJECT;
+                return NodeFilter.FILTER_ACCEPT;
+            }
+        }
+    );
 
-  firstWarningTarget = null;
-
-  const walker = document.createTreeWalker(
-    searchArea,
-    NodeFilter.SHOW_TEXT,
-    {
-      acceptNode(node) {
-        if (!node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
-        if (isInsideExtensionUI(node)) return NodeFilter.FILTER_REJECT;
-        return NodeFilter.FILTER_ACCEPT;
-      }
+    let node;
+    while ((node = walker.nextNode())) {
+        textNodes.push(node);
     }
-  );
 
-          if (parent.closest(".review-extension-box, .warning-summary-box")) {
-            return NodeFilter.FILTER_REJECT;
-          }
+    textNodes.forEach(textNode => {
+        const parent = textNode.parentNode;
+        if (!parent) return;
 
-  while ((node = walker.nextNode())) {
-    textNodes.push(node);
-  }
+        const text = textNode.nodeValue;
+        let replaced = text;
+        let foundInThisNode = false;
 
-  textNodes.forEach(textNode => {
-    const parent = textNode.parentNode;
-    if (!parent) return;
+        keywords.forEach(keyword => {
+            const regex = new RegExp(`\\b(${keyword})\\b`, "gi");
+            if (regex.test(replaced)) foundInThisNode = true;
+            replaced = replaced.replace(
+                regex,
+                '<span class="highlight-warning">$1</span>'
+            );
+        });
 
-    const text = textNode.nodeValue;
-    let replaced = text;
-    let foundInThisNode = false;
+        if (replaced !== text) {
+            const span = document.createElement("span");
+            span.innerHTML = replaced;
+            parent.replaceChild(span, textNode);
 
-    keywords.forEach(keyword => {
-      const regex = new RegExp(`\\b(${keyword})\\b`, "gi");
-      if (regex.test(replaced)) {
-        foundInThisNode = true;
-      }
-      replaced = replaced.replace(
-        regex,
-        '<span class="highlight-warning">$1</span>'
-      );
+            if (!firstWarningTarget && foundInThisNode) {
+                const firstHighlight = span.querySelector(".highlight-warning");
+                const resultBlock = firstHighlight
+                    ? findClosestResultBlock(firstHighlight)
+                    : null;
+                firstWarningTarget = resultBlock || firstHighlight || span;
+            }
+        }
     });
-  });
 }
-
-    if (replaced !== text) {
-      const span = document.createElement("span");
-      span.innerHTML = replaced;
-      parent.replaceChild(span, textNode);
-
-      if (!firstWarningTarget && foundInThisNode) {
-        const firstHighlight = span.querySelector(".highlight-warning");
-        const resultBlock = firstHighlight
-          ? findClosestResultBlock(firstHighlight)
-          : null;
-
-        firstWarningTarget = resultBlock || firstHighlight || span;
-      }
-    }
-  });
 
   if (foundKeywords.length === 0) return;
   if (document.querySelector(".warning-summary-box")) return;
