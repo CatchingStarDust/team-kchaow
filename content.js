@@ -257,12 +257,25 @@ function showWarningSummary() {
     const searchArea = document.querySelector("#search");
     if (!searchArea) return;
 
-    const clone = searchArea.cloneNode(true);
-    clone.querySelectorAll(
-        ".review-extension-box, .warning-summary-box"
-    ).forEach(el => el.remove());
+    // Walk the DOM the same way highlightKeywords does
+    const walker = document.createTreeWalker(
+        searchArea,
+        NodeFilter.SHOW_TEXT,
+        {
+            acceptNode(node) {
+                if (!node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+                if (isInsideExtensionUI(node)) return NodeFilter.FILTER_REJECT;
+                return NodeFilter.FILTER_ACCEPT;
+            }
+        }
+    );
 
-    const pageText = clone.textContent.toLowerCase();
+    let pageText = "";
+    let node;
+    while ((node = walker.nextNode())) {
+        pageText += " " + node.nodeValue.toLowerCase();
+    }
+
     const foundKeywords = keywords.filter(keyword => {
         const regex = new RegExp(`\\b${keyword}\\b`, "i");
         return regex.test(pageText);
@@ -300,7 +313,3 @@ observer.observe(document.body, {
 if (document.querySelector("#search")) {
     setTimeout(init, 500);
 }
-
-insertReviewBox();
-highlightKeywords();
-showWarningSummary();
