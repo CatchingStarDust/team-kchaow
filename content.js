@@ -1,3 +1,5 @@
+let firstWarningTarget = null;
+
 function getSearchQuery() {
   const params = new URLSearchParams(window.location.search);
   return params.get("q") || "";
@@ -108,6 +110,19 @@ function insertReviewBox() {
   main.prepend(box);
 }
 
+function isInsideExtensionUI(node) {
+  const parentElement = node.parentElement;
+  if (!parentElement) return false;
+
+  return !!parentElement.closest(
+    ".review-extension-box, .warning-summary-box"
+  );
+}
+
+function findClosestResultBlock(element) {
+  return element.closest(".g, [data-snc], [data-hveid]") || element.closest("div");
+}
+
 function highlightKeywords() {
   const keywords = getWarningKeywords();
   const cards = getResultCards();
@@ -120,83 +135,106 @@ function highlightKeywords() {
         acceptNode(node) {
           if (!node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
 
-          const parent = node.parentElement;
-          if (!parent) return NodeFilter.FILTER_REJECT;
+  firstWarningTarget = null;
+
+  const walker = document.createTreeWalker(
+    searchArea,
+    NodeFilter.SHOW_TEXT,
+    {
+      acceptNode(node) {
+        if (!node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+        if (isInsideExtensionUI(node)) return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
+      }
+    }
+  );
 
           if (parent.closest(".review-extension-box, .warning-summary-box")) {
             return NodeFilter.FILTER_REJECT;
           }
 
-          if (parent.closest("script, style, noscript, textarea, input")) {
-            return NodeFilter.FILTER_REJECT;
-          }
+  while ((node = walker.nextNode())) {
+    textNodes.push(node);
+  }
 
-          return NodeFilter.FILTER_ACCEPT;
-        }
+  textNodes.forEach(textNode => {
+    const parent = textNode.parentNode;
+    if (!parent) return;
+
+    const text = textNode.nodeValue;
+    let replaced = text;
+    let foundInThisNode = false;
+
+    keywords.forEach(keyword => {
+      const regex = new RegExp(`\\b(${keyword})\\b`, "gi");
+      if (regex.test(replaced)) {
+        foundInThisNode = true;
       }
-    );
-
-    const textNodes = [];
-    let node;
-
-    while ((node = walker.nextNode())) {
-      textNodes.push(node);
-    }
-
-    textNodes.forEach(textNode => {
-      const parent = textNode.parentNode;
-      if (!parent) return;
-
-      const text = textNode.nodeValue;
-      let replaced = text;
-
-      keywords.forEach(keyword => {
-        const regex = new RegExp(`\\b(${keyword})\\b`, "gi");
-        replaced = replaced.replace(
-          regex,
-          '<span class="highlight-warning">$1</span>'
-        );
-      });
-
-      if (replaced !== text) {
-        const span = document.createElement("span");
-        span.innerHTML = replaced;
-        parent.replaceChild(span, textNode);
-      }
+      replaced = replaced.replace(
+        regex,
+        '<span class="highlight-warning">$1</span>'
+      );
     });
   });
 }
 
-function jumpToFirstWarning() {
-  const keywords = getWarningKeywords();
-  const cards = getResultCards();
+    if (replaced !== text) {
+      const span = document.createElement("span");
+      span.innerHTML = replaced;
+      parent.replaceChild(span, textNode);
 
-  const match = cards.find(card => {
-    const text = (card.innerText || "").toLowerCase();
-    return keywords.some(keyword => {
-      const regex = new RegExp(`\\b${keyword}\\b`, "i");
-      return regex.test(text);
-    });
+      if (!firstWarningTarget && foundInThisNode) {
+        const firstHighlight = span.querySelector(".highlight-warning");
+        const resultBlock = firstHighlight
+          ? findClosestResultBlock(firstHighlight)
+          : null;
+
+        firstWarningTarget = resultBlock || firstHighlight || span;
+      }
+    }
   });
 
-  if (!match) {
-    alert("No warning result found in the search results.");
+  if (foundKeywords.length === 0) return;
+  if (document.querySelector(".warning-summary-box")) return;
+
+  const searchArea = document.querySelector("#search");
+  if (!searchArea) return;
+
+  const box = createWarningBox(foundKeywords);
+  if (!box) return;
+
+  searchArea.prepend(box);
+}
+
+function jumpToFirstWarning() {
+  if (!firstWarningTarget) {
+    const fallbackHighlight = document.querySelector(
+      "#search .highlight-warning"
+    );
+
+    if (fallbackHighlight && !fallbackHighlight.closest(".warning-summary-box, .review-extension-box")) {
+      firstWarningTarget = findClosestResultBlock(fallbackHighlight) || fallbackHighlight;
+    }
+  }
+
+  if (!firstWarningTarget) {
+    alert("No warning result found on this page.");
     return;
   }
 
-  match.scrollIntoView({
+  firstWarningTarget.scrollIntoView({
     behavior: "smooth",
     block: "center"
   });
 
-  match.style.outline = "4px solid red";
-  match.style.outlineOffset = "4px";
-  match.style.backgroundColor = "#fff3cd";
+  firstWarningTarget.style.outline = "4px solid red";
+  firstWarningTarget.style.outlineOffset = "3px";
+  firstWarningTarget.style.backgroundColor = "#fff3cd";
 
   setTimeout(() => {
-    match.style.outline = "";
-    match.style.outlineOffset = "";
-    match.style.backgroundColor = "";
+    firstWarningTarget.style.outline = "";
+    firstWarningTarget.style.outlineOffset = "";
+    firstWarningTarget.style.backgroundColor = "";
   }, 2000);
 }
 
@@ -213,7 +251,7 @@ function createWarningBox(foundKeywords) {
 
   const subtitle = document.createElement("div");
   subtitle.className = "warning-summary-subtitle";
-  subtitle.textContent = "These words appeared in the search results:";
+  subtitle.textContent = "These words appeared on this page:";
   box.appendChild(subtitle);
 
   const list = document.createElement("ul");
@@ -237,24 +275,29 @@ function createWarningBox(foundKeywords) {
 }
 
 function showWarningSummary() {
-  const keywords = getWarningKeywords();
-  const cards = getResultCards();
+  const keywords = [
+    "scam",
+    "fraud",
+    "fake",
+    "complaint",
+    "complaints",
+    "lawsuit",
+    "refund",
+    "warning",
+    "ripoff"
+  ];
 
-  const resultsText = cards
-    .map(card => card.innerText || "")
-    .join(" ")
-    .toLowerCase();
+  const searchArea = document.querySelector("#search");
+  if (!searchArea) return;
 
+  const pageText = searchArea.innerText.toLowerCase();
   const foundKeywords = keywords.filter(keyword => {
     const regex = new RegExp(`\\b${keyword}\\b`, "i");
-    return regex.test(resultsText);
+    return regex.test(pageText);
   });
 
   if (foundKeywords.length === 0) return;
   if (document.querySelector(".warning-summary-box")) return;
-
-  const searchArea = document.querySelector("#search");
-  if (!searchArea) return;
 
   const box = createWarningBox(foundKeywords);
   if (!box) return;
