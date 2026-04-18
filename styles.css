@@ -1,0 +1,39 @@
+.review-extension-box {
+  background: #fff;
+  border: 1px solid #dadce0;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  font-family: Arial, sans-serif;
+}
+
+.review-title {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.review-subtitle {
+  font-size: 13px;
+  color: #5f6368;
+  margin-bottom: 10px;
+}
+
+.review-links {
+  display: flex;
+  gap: 10px;
+}
+
+.review-link {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #f1f3f4;
+  text-decoration: none;
+  color: #1a73e8;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.review-link:hover {
+  background: #e8f0fe;
+}
