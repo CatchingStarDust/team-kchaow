@@ -15,6 +15,7 @@ function createReviewBox(query) {
   const box = document.createElement("div");
   box.className = "review-extension-box";
 
+  //change emoji
   const title = document.createElement("div");
   title.className = "review-title";
     title.textContent = "🔍 Scam Check";
