@@ -6,7 +6,7 @@ function getSearchQuery() {
 }
 
 function looksLikeBusiness(query) {
-    return query.split(" ").length >= 2 &&
+    return query.length >= 3 &&
         !query.toLowerCase().includes("how") &&
         !query.toLowerCase().includes("what");
 }
@@ -21,8 +21,8 @@ function getWarningKeywords() {
         "lawsuit",
         "refund",
         "warning",
-        "ripoff"
-        "MLM"
+        "ripoff",
+        "MLM",
         "pyramid scheme"
     ];
 }
