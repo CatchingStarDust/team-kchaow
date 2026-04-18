@@ -151,6 +151,7 @@ function insertReviewBox() {
   highlightKeywords();
 }
 
+insertReviewBox();
 // Paste this at the very bottom of content.js
 async function addScamMeter(box, actualPrice, query, rating, reviewCount) {
     const domain = window.location.hostname;
