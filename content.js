@@ -6,7 +6,7 @@ function getSearchQuery() {
 }
 
 function looksLikeBusiness(query) {
-    return query.length >= 3 &&
+    return query.split(" ").length >= 2 &&
         !query.toLowerCase().includes("how") &&
         !query.toLowerCase().includes("what");
 }
