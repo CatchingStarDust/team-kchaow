@@ -11,6 +11,39 @@ function looksLikeBusiness(query) {
          !query.toLowerCase().includes("what");
 }
 
+function getWarningKeywords() {
+  return [
+    "scam",
+    "fraud",
+    "fake",
+    "complaint",
+    "complaints",
+    "lawsuit",
+    "refund",
+    "warning",
+    "ripoff"
+  ];
+}
+
+function getResultCards() {
+  const selectors = [
+    "#search .g",
+    "#search .MjjYud",
+    "#search [data-snc]"
+  ];
+
+  const cards = [];
+  selectors.forEach(selector => {
+    document.querySelectorAll(selector).forEach(el => {
+      if (!cards.includes(el)) {
+        cards.push(el);
+      }
+    });
+  });
+
+  return cards;
+}
+
 function createReviewBox(query) {
   const box = document.createElement("div");
   box.className = "review-extension-box";
@@ -91,20 +124,16 @@ function findClosestResultBlock(element) {
 }
 
 function highlightKeywords() {
-  const keywords = [
-    "scam",
-    "fraud",
-    "fake",
-    "complaint",
-    "complaints",
-    "lawsuit",
-    "refund",
-    "warning",
-    "ripoff"
-  ];
+  const keywords = getWarningKeywords();
+  const cards = getResultCards();
 
-  const searchArea = document.querySelector("#search");
-  if (!searchArea) return;
+  cards.forEach(card => {
+    const walker = document.createTreeWalker(
+      card,
+      NodeFilter.SHOW_TEXT,
+      {
+        acceptNode(node) {
+          if (!node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
 
   firstWarningTarget = null;
 
@@ -120,8 +149,9 @@ function highlightKeywords() {
     }
   );
 
-  const textNodes = [];
-  let node;
+          if (parent.closest(".review-extension-box, .warning-summary-box")) {
+            return NodeFilter.FILTER_REJECT;
+          }
 
   while ((node = walker.nextNode())) {
     textNodes.push(node);
@@ -145,6 +175,8 @@ function highlightKeywords() {
         '<span class="highlight-warning">$1</span>'
       );
     });
+  });
+}
 
     if (replaced !== text) {
       const span = document.createElement("span");
@@ -161,6 +193,17 @@ function highlightKeywords() {
       }
     }
   });
+
+  if (foundKeywords.length === 0) return;
+  if (document.querySelector(".warning-summary-box")) return;
+
+  const searchArea = document.querySelector("#search");
+  if (!searchArea) return;
+
+  const box = createWarningBox(foundKeywords);
+  if (!box) return;
+
+  searchArea.prepend(box);
 }
 
 function jumpToFirstWarning() {

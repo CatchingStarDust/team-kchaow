@@ -1,0 +1,54 @@
+﻿body {
+    /* warning-summary.css */
+    .warning-summary-box
+
+{
+    background: #fff3cd;
+    border: 2px solid #ff6b6b;
+    color: #c92a2a;
+}
+
+.warning-summary-title {
+    color: #c92a2a;
+}
+
+.warning-summary-item {
+    color: #a61e4d;
+    border-left: 3px solid #ff6b6b;
+}
+
+.warning-keyword {
+    color: #c92a2a;
+}
+
+.warning-result-number {
+    background: #ff6b6b;
+    color: #fff;
+}
+
+@media (prefers-color-scheme: dark) {
+    .warning-summary-box {
+        background: #3c2e1a;
+        border: 2px solid #ffad47;
+        color: #ffd180;
+    }
+
+    .warning-summary-title {
+        color: #ffd180;
+    }
+
+    .warning-summary-item {
+        color: #ffd180;
+        border-left: 3px solid #ffad47;
+    }
+
+    .warning-keyword {
+        color: #ffd180;
+    }
+
+    .warning-result-number {
+        background: #ffad47;
+        color: #222;
+    }
+}
+}

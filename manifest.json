@@ -3,11 +3,16 @@
   "name": "Business Scam Detector",
   "version": "1.0",
   "description": "Detect potential scams by showing reviews, complaints, and license checks when searching.",
+  "permissions": ["activeTab", "storage"],
+  "host_permissions": ["https://*/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
   "content_scripts": [
     {
-      "matches": ["*://www.google.com/search*"],
+      "matches": ["*://*/*"],
       "js": ["content.js"],
-      "css": ["styles.css"]
+      "css": [ "styles.css", "warningSummaryStyle.css", "scamCheckBox.css" ]
     }
   ]
 }
