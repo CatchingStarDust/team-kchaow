@@ -29,7 +29,6 @@ function highlightKeywords() {
             textNodes.push(node);
         }
     }
-  ];
 
   const linkContainer = document.createElement("div");
   linkContainer.className = "review-links";
