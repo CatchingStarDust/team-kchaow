@@ -112,7 +112,7 @@ function highlightKeywords() {
 
     if (!parent || parent.classList?.contains("highlight-warning")) return;
 
-    let text = textNode.nodeValue;
+    const text = textNode.nodeValue;
     let replaced = text;
 
     keywords.forEach(keyword => {
@@ -133,20 +133,67 @@ function highlightKeywords() {
 
 function jumpToFirstWarning() {
   const firstWarning = document.querySelector(".highlight-warning");
-  if (!firstWarning) return;
 
-  firstWarning.scrollIntoView({
-    behavior: "smooth",
-    block: "center"
+  if (firstWarning) {
+    firstWarning.scrollIntoView({
+      behavior: "smooth",
+      block: "center"
+    });
+
+    firstWarning.style.outline = "4px solid red";
+    firstWarning.style.outlineOffset = "3px";
+    firstWarning.style.backgroundColor = "#ffeb3b";
+
+    setTimeout(() => {
+      firstWarning.style.outline = "";
+      firstWarning.style.outlineOffset = "";
+      firstWarning.style.backgroundColor = "";
+    }, 2000);
+
+    return;
+  }
+
+  const resultBlocks = Array.from(document.querySelectorAll("#search div"));
+  const keywords = [
+    "scam",
+    "fraud",
+    "fake",
+    "complaint",
+    "complaints",
+    "lawsuit",
+    "refund",
+    "warning",
+    "ripoff"
+  ];
+
+  const firstMatchingBlock = resultBlocks.find(block => {
+    const text = block.innerText?.toLowerCase() || "";
+    return keywords.some(keyword => {
+      const regex = new RegExp(`\\b${keyword}\\b`, "i");
+      return regex.test(text);
+    });
   });
 
-  firstWarning.style.outline = "2px solid red";
-  firstWarning.style.outlineOffset = "2px";
+  if (firstMatchingBlock) {
+    firstMatchingBlock.scrollIntoView({
+      behavior: "smooth",
+      block: "center"
+    });
 
-  setTimeout(() => {
-    firstWarning.style.outline = "";
-    firstWarning.style.outlineOffset = "";
-  }, 2000);
+    firstMatchingBlock.style.outline = "4px solid red";
+    firstMatchingBlock.style.outlineOffset = "3px";
+    firstMatchingBlock.style.backgroundColor = "#fff3cd";
+
+    setTimeout(() => {
+      firstMatchingBlock.style.outline = "";
+      firstMatchingBlock.style.outlineOffset = "";
+      firstMatchingBlock.style.backgroundColor = "";
+    }, 2000);
+
+    return;
+  }
+
+  alert("No warning result found on this page.");
 }
 
 function createWarningBox(foundKeywords) {
@@ -203,9 +250,9 @@ function showWarningSummary() {
 
   const pageText = searchArea.innerText.toLowerCase();
   const foundKeywords = keywords.filter(keyword => {
-  const regex = new RegExp(`\\b${keyword}\\b`, "i");
-  return regex.test(pageText);
-});
+    const regex = new RegExp(`\\b${keyword}\\b`, "i");
+    return regex.test(pageText);
+  });
 
   if (foundKeywords.length === 0) return;
   if (document.querySelector(".warning-summary-box")) return;
