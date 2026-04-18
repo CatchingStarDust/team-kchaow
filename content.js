@@ -1,40 +1,33 @@
-function getSearchQuery() {
-  const params = new URLSearchParams(window.location.search);
-  return params.get("q") || "";
-}
+function highlightKeywords() {
+    const keywords = [
+        "scam",
+        "fraud",
+        "fake",
+        "complaint",
+        "complaints",
+        "lawsuit",
+        "refund",
+        "warning",
+        "ripoff"
+    ];
 
-function looksLikeBusiness(query) {
-  return query.split(" ").length >= 2 &&
-         !query.toLowerCase().includes("how") &&
-         !query.toLowerCase().includes("what");
-}
+    const searchArea = document.querySelector("#search");
+    if (!searchArea) return;
 
-function createReviewBox(query) {
-  const box = document.createElement("div");
-  box.className = "review-extension-box";
+    const walker = document.createTreeWalker(
+        searchArea,
+        NodeFilter.SHOW_TEXT,
+        null,
+        false
+    );
 
-  const title = document.createElement("div");
-  title.className = "review-title";
-  title.textContent = "⭐ Reviews";
-  box.appendChild(title);
+    const textNodes = [];
+    let node;
 
-  const subtitle = document.createElement("div");
-  subtitle.className = "review-subtitle";
-  subtitle.textContent = query;
-  box.appendChild(subtitle);
-
-  const links = [
-    {
-      label: "Yelp",
-      url: `https://www.google.com/search?q=${encodeURIComponent(query + " Yelp reviews")}`
-    },
-    {
-      label: "Facebook",
-      url: `https://www.google.com/search?q=${encodeURIComponent(query + " Facebook reviews")}`
-    },
-    {
-      label: "Google",
-      url: `https://www.google.com/search?q=${encodeURIComponent(query + " Google reviews")}`
+    while ((node = walker.nextNode())) {
+        if (node.nodeValue.trim()) {
+            textNodes.push(node);
+        }
     }
   ];
 
