@@ -255,7 +255,12 @@ function showWarningSummary() {
     const searchArea = document.querySelector("#search");
     if (!searchArea) return;
 
-    const pageText = searchArea.innerText.toLowerCase();
+    const clone = searchArea.cloneNode(true);
+    clone.querySelectorAll(
+        ".review-extension-box, .warning-summary-box"
+    ).forEach(el => el.remove());
+
+    const pageText = clone.innerText.toLowerCase();
     const foundKeywords = keywords.filter(keyword => {
         const regex = new RegExp(`\\b${keyword}\\b`, "i");
         return regex.test(pageText);
