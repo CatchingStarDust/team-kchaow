@@ -1,3 +1,5 @@
+// part of the code that shows the user reviews box on google search results page
+
 function getSearchQuery() {
   const params = new URLSearchParams(window.location.search);
   return params.get("q") || "";
