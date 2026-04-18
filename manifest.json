@@ -12,7 +12,7 @@
     {
       "matches": ["*://*/*"],
       "js": ["content.js"],
-      "css": [ "styles.css", "warningSummaryStyle.css" ]
+      "css": [ "styles.css", "warningSummaryStyle.css", "scamCheckBox.css" ]
     }
   ]
 }
