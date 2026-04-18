@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Business Scam Detector",
   "version": "1.0",
-  "description": "Detect potential scams by showing reviews, complaints, and license checks when searching businesses."
+  "description": "Detect potential scams by showing reviews, complaints, and license checks when searching.",
   "content_scripts": [
     {
       "matches": ["*://www.google.com/search*"],
