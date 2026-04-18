@@ -35,11 +35,11 @@ function createReviewBox(query) {
     {
       label: "CSLB License Check",
       url: "https://www.cslb.ca.gov/onlineservices/checklicenseII/checklicense.aspx"
-    }
+    },
     {
       label: "Better Business Bureau",
       url: "https://www.bbb.org/"
-    }
+    },
     {
       label: "Consumer Affairs",
       url: "https://www.consumeraffairs.com/"
