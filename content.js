@@ -172,7 +172,11 @@ function showWarningSummary() {
   if (!searchArea) return;
 
   const pageText = searchArea.innerText.toLowerCase();
-  const foundKeywords = keywords.filter(keyword => pageText.includes(keyword));
+  const foundKeywords = keywords.filter(keyword => {
+    // Use word boundaries to avoid false positives like "deepfake"
+    const regex = new RegExp(`\\b${keyword}\\b`, "i");
+    return regex.test(pageText);
+  });
 
   if (foundKeywords.length === 0) return;
   if (document.querySelector(".warning-summary-box")) return;
