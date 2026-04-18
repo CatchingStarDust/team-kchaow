@@ -37,10 +37,10 @@
         color: #ffd180;
     }
 
-    .review-subtitle {
+    .warning-summary-subtitle {
         font-size: 13px;
         color: #F1F5D0;
-        margin-bottom: 10px;
+        margin-bottom: 8px;
     }
 
     .warning-summary-item {

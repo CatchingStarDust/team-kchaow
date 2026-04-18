@@ -47,56 +47,57 @@ function getResultCards() {
 }
 
 function createReviewBox(query) {
-    const box = document.createElement("div");
-    box.className = "review-extension-box";
+  const box = document.createElement("div");
+  box.className = "review-extension-box";
 
-    const title = document.createElement("div");
-    title.className = "review-title";
+  //change emoji
+  const title = document.createElement("div");
+  title.className = "review-title";
     title.textContent = "🔍 Scam Check";
-    box.appendChild(title);
+  box.appendChild(title);
 
-    const subtitle = document.createElement("div");
-    subtitle.className = "review-subtitle";
-    subtitle.textContent = query;
-    box.appendChild(subtitle);
+  const subtitle = document.createElement("div");
+  subtitle.className = "review-subtitle";
+  subtitle.textContent = query;
+  box.appendChild(subtitle);
 
-    const links = [
-        {
-            label: "Yelp",
-            url: `https://www.google.com/search?q=${encodeURIComponent(query + " Yelp reviews")}`
-        },
-        {
-            label: "Facebook",
-            url: `https://www.google.com/search?q=${encodeURIComponent(query + " Facebook reviews")}`
-        },
-        {
-            label: "CSLB License Check",
-            url: "https://www.cslb.ca.gov/onlineservices/checklicenseII/checklicense.aspx"
-        },
-        {
-            label: "BBB",
-            url: `https://www.bbb.org/search?find_text=${encodeURIComponent(query)}`
-        },
-        {
-            label: "Consumer Affairs",
-            url: `https://www.consumeraffairs.com/search/?q=${encodeURIComponent(query)}`
-        }
-    ];
+  const links = [
+    {
+      label: "Yelp",
+      url: `https://www.google.com/search?q=${encodeURIComponent(query + " Yelp reviews")}`
+    },
+    {
+      label: "Facebook",
+      url: `https://www.google.com/search?q=${encodeURIComponent(query + " Facebook reviews")}`
+    },
+    {
+      label: "CSLB License Check",
+      url: "https://www.cslb.ca.gov/onlineservices/checklicenseII/checklicense.aspx"
+    },
+    {
+      label: "BBB",
+      url: `https://www.bbb.org/search?find_text=${encodeURIComponent(query)}`
+    },
+    {
+      label: "Consumer Affairs",
+      url: `https://www.consumeraffairs.com/search/?q=${encodeURIComponent(query)}`
+    }
+  ];
 
-    const linkContainer = document.createElement("div");
-    linkContainer.className = "review-links";
+  const linkContainer = document.createElement("div");
+  linkContainer.className = "review-links";
 
-    links.forEach(linkInfo => {
-        const a = document.createElement("a");
-        a.href = linkInfo.url;
-        a.textContent = linkInfo.label;
-        a.target = "_blank";
-        a.className = "review-link";
-        linkContainer.appendChild(a);
-    });
+  links.forEach(linkInfo => {
+    const a = document.createElement("a");
+    a.href = linkInfo.url;
+    a.textContent = linkInfo.label;
+    a.target = "_blank";
+    a.className = "review-link";
+    linkContainer.appendChild(a);
+  });
 
-    box.appendChild(linkContainer);
-    return box;
+  box.appendChild(linkContainer);
+  return box;
 }
 
 function insertReviewBox() {
