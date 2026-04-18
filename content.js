@@ -14,13 +14,13 @@ function looksLikeBusiness(query) {
 function getWarningKeywords() {
     return [
         "scam",
+        "scammer",
         "fraud",
         "fake",
         "complaint",
         "complaints",
         "lawsuit",
         "refund",
-        "warning",
         "ripoff",
         "MLM",
         "pyramid scheme"
