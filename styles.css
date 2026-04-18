@@ -44,3 +44,11 @@
   padding: 1px 3px;
   border-radius: 3px;
 }
+.warning-summary-box {
+  background: #fff4e5;
+  border: 1px solid #f4b400;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  font-family: Arial, sans-serif;
+}
